@@ -1,26 +1,30 @@
 # ELOVAA Frontend (React + Vite)
 
-## Run (local)
-```
+## Local Development
+```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open: http://localhost:5173  (backend pehle chalu hona chahiye)
+Open in browser: `http://localhost:5173` (ensure backend is running first).
 
-`.env` me `VITE_API_URL` backend ka link hai (local: http://localhost:5000).
+## Configuration
+Configure `VITE_API_URL` in `.env`:
+- Local: `http://localhost:5000`
+- Production: `https://elovaa-backend-visitor.onrender.com`
 
-## Login
-- Email: elovaaacadmy@gmail.com
-- Password: elovaa#012
+## Admin Credentials
+- **Email**: `elovaaacadmy@gmail.com`
+- **Password**: `elovaa#012`
 
-## Build
+## Production Build
+```bash
+npm run build
 ```
-npm run build      # dist/ folder banega
-```
+Build output generated in `dist/`.
 
-## Deploy (Vercel ya Netlify)
-1. `frontend` folder GitHub par daalo (ya Root Directory = `frontend`).
-2. Build command: `npm run build`, Output directory: `dist`.
-3. Environment variable: `VITE_API_URL` = backend ka deployed link (e.g. https://elovaa-visitor-backend.onrender.com), bina last `/` ke.
-4. Deploy ke baad frontend ka link backend ke `FRONTEND_URL` me daalo (Render env) taaki CORS allow ho.
+## Deployment (Vercel)
+1. Repository: [https://github.com/aquiiibbb/elovaa-visitor-frontend](https://github.com/aquiiibbb/elovaa-visitor-frontend)
+2. Framework Preset: `Vite`
+3. Environment Variable:
+   - `VITE_API_URL`: Backend API URL (without trailing slash)

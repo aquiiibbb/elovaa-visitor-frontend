@@ -24,7 +24,7 @@ export default function VisitorForm() {
       setPhoto('');
       setCameraOn(true);
     } catch {
-      setMsg({ type: 'error', text: 'Camera nahi khul paya. Browser me camera permission allow karo (site HTTPS par honi chahiye).' });
+      setMsg({ type: 'error', text: 'Unable to access camera. Please grant camera permission in your browser (HTTPS required).' });
     }
   };
 
@@ -66,16 +66,16 @@ export default function VisitorForm() {
     try {
       if (mode === 'checkin') {
         const { data } = await axios.post('/api/visitors/checkin', { ...form, photo });
-        setMsg({ type: 'success', text: `${data.visitor.name}, aapka check-in ho gaya ✅` });
+        setMsg({ type: 'success', text: `Welcome ${data.visitor.name}, your check-in is complete! ✅` });
         setForm(empty);
         setPhoto('');
       } else {
         const { data } = await axios.post('/api/visitors/checkout', { phone: form.phone });
-        setMsg({ type: 'success', text: `${data.visitor.name}, aapka check-out ho gaya ✅` });
+        setMsg({ type: 'success', text: `Thank you ${data.visitor.name}, your check-out is complete! ✅` });
         setForm(empty);
       }
     } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || 'Kuch galat ho gaya, dobara try karo' });
+      setMsg({ type: 'error', text: err.response?.data?.message || 'Something went wrong. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,7 @@ export default function VisitorForm() {
       <div className="card">
         <h2>Visitor {mode === 'checkin' ? 'Check In' : 'Check Out'}</h2>
         <p className="muted">
-          {mode === 'checkin' ? 'ELOVAA me aapka swagat hai. Details bharein aur photo click karein.' : 'Apna phone number daalkar check-out karein.'}
+          {mode === 'checkin' ? 'Welcome to ELOVAA. Please enter your details and capture a photo.' : 'Enter your registered phone number to check out.'}
         </p>
 
         <div className="seg">
@@ -109,7 +109,7 @@ export default function VisitorForm() {
           )}
 
           <label>Phone Number</label>
-          <input name="phone" type="tel" inputMode="tel" value={form.phone} onChange={handle} required placeholder="Phone number" pattern="[0-9+ \-]{7,15}" title="Valid phone number daalo" autoComplete="tel" />
+          <input name="phone" type="tel" inputMode="tel" value={form.phone} onChange={handle} required placeholder="Phone number" pattern="[0-9+ \-]{7,15}" title="Please enter a valid phone number" autoComplete="tel" />
 
           {mode === 'checkin' && (
             <>
@@ -120,13 +120,13 @@ export default function VisitorForm() {
               <div className="camera">
                 {cameraOn && <video ref={videoRef} autoPlay playsInline muted />}
                 {!cameraOn && photo && <img src={photo} alt="captured" />}
-                {!cameraOn && !photo && <div className="placeholder"><span>📷</span>Photo abhi nahi li gayi</div>}
+                {!cameraOn && !photo && <div className="placeholder"><span>📷</span>No photo taken yet</div>}
               </div>
               <div className="row">
                 {!cameraOn ? (
                   <button type="button" className="btn soft block" onClick={startCamera}>{photo ? 'Retake Photo' : 'Open Camera'}</button>
                 ) : (
-                  <button type="button" className="btn soft block" onClick={capture}>📸 Click Photo</button>
+                  <button type="button" className="btn soft block" onClick={capture}>📸 Capture Photo</button>
                 )}
               </div>
             </>

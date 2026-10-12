@@ -45,7 +45,7 @@ export default function Dashboard() {
   const stats = [
     { n: visitors.length, l: 'Total Visitors' },
     { n: visitors.filter((v) => new Date(v.checkInTime).toDateString() === today).length, l: 'Today' },
-    { n: visitors.filter((v) => v.status === 'checked-in').length, l: 'Abhi Andar' },
+    { n: visitors.filter((v) => v.status === 'checked-in').length, l: 'Currently Inside' },
     { n: visitors.filter((v) => v.status === 'checked-out').length, l: 'Checked Out' },
   ];
 
@@ -93,7 +93,7 @@ export default function Dashboard() {
               </tr>
             ))}
             {!loading && list.length === 0 && (
-              <tr className="empty-row"><td colSpan="9" className="empty">Koi record nahi mila</td></tr>
+              <tr className="empty-row"><td colSpan="9" className="empty">No visitor records found</td></tr>
             )}
           </tbody>
         </table>

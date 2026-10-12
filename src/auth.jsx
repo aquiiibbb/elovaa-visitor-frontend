@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
     else delete axios.defaults.headers.common.Authorization;
   }, [token]);
 
-  // token expire ho jaye to logout
+  // Auto logout on 401 response (session expired)
   useEffect(() => {
     const id = axios.interceptors.response.use(
       (r) => r,

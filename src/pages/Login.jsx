@@ -17,7 +17,7 @@ export default function Login() {
     try {
       await login(email, password);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login nahi ho paya, dobara try karo');
+      setError(err.response?.data?.message || 'Login failed. Please verify your credentials and try again.');
     } finally {
       setLoading(false);
     }
@@ -28,7 +28,7 @@ export default function Login() {
       <form className="login-card" onSubmit={submit}>
         <img src={logo} alt="ELOVAA" className="login-logo" />
         <h1>Welcome</h1>
-        <p className="muted">Visitor Management me login karein</p>
+        <p className="muted">Sign in to Visitor Management</p>
 
         <label htmlFor="email">Email</label>
         <input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required />
