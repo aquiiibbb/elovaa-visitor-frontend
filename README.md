@@ -14,7 +14,7 @@ Configure `VITE_API_URL` in `.env`:
 - Production: `https://elovaa-backend-visitor.onrender.com`
 
 ## Admin Credentials
-- **Email**: `elovaaacadmy@gmail.com`
+- **Email**: `elovaabeautyacademy@gmail.com`
 - **Password**: `elovaa#012`
 
 ## Production Build

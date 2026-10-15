@@ -30,7 +30,10 @@ export default function Dashboard() {
     return () => clearInterval(t);
   }, []);
 
-  const photoUrl = (id) => `${API_URL}/api/visitors/${id}/photo?token=${token}`;
+  const photoUrl = (id, type = 'in') =>
+    type === 'out'
+      ? `${API_URL}/api/visitors/${id}/checkout-photo?token=${token}`
+      : `${API_URL}/api/visitors/${id}/photo?token=${token}`;
 
   const list = useMemo(() => {
     const q = search.toLowerCase();
@@ -72,15 +75,40 @@ export default function Dashboard() {
         <table className="rtable">
           <thead>
             <tr>
-              <th>Photo</th><th>Name</th><th>Email</th><th>Phone</th><th>Purpose</th>
+              <th>In Photo</th><th>Out Photo</th><th>Name</th><th>Email</th><th>Phone</th><th>Purpose</th>
               <th>Check In</th><th>Check Out</th><th>Duration</th><th>Status</th>
             </tr>
           </thead>
           <tbody>
             {list.map((v) => (
               <tr key={v._id}>
-                <td data-label="Photo">
-                  {v.hasPhoto && <img className="thumb" src={photoUrl(v._id)} alt={v.name} loading="lazy" onClick={() => setPreview(photoUrl(v._id))} />}
+                <td data-label="In Photo">
+                  {v.hasPhoto ? (
+                    <img
+                      className="thumb"
+                      src={photoUrl(v._id, 'in')}
+                      alt={`${v.name} In`}
+                      title="View Check-In Photo"
+                      loading="lazy"
+                      onClick={() => setPreview(photoUrl(v._id, 'in'))}
+                    />
+                  ) : (
+                    '—'
+                  )}
+                </td>
+                <td data-label="Out Photo">
+                  {v.hasCheckOutPhoto ? (
+                    <img
+                      className="thumb"
+                      src={photoUrl(v._id, 'out')}
+                      alt={`${v.name} Out`}
+                      title="View Check-Out Photo"
+                      loading="lazy"
+                      onClick={() => setPreview(photoUrl(v._id, 'out'))}
+                    />
+                  ) : (
+                    '—'
+                  )}
                 </td>
                 <td data-label="Name" className="strong">{v.name}</td>
                 <td data-label="Email">{v.email}</td>
@@ -93,7 +121,7 @@ export default function Dashboard() {
               </tr>
             ))}
             {!loading && list.length === 0 && (
-              <tr className="empty-row"><td colSpan="9" className="empty">No visitor records found</td></tr>
+              <tr className="empty-row"><td colSpan="10" className="empty">No visitor records found</td></tr>
             )}
           </tbody>
         </table>
