@@ -9,7 +9,6 @@ export default function VisitorForm() {
   const [form, setForm] = useState(empty);
   const [photo, setPhoto] = useState('');
   const [cameraOn, setCameraOn] = useState(false);
-  const [facingMode, setFacingMode] = useState('user'); // 'user' (selfie) or 'environment' (rear/desk)
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
   const videoRef = useRef(null);
@@ -25,13 +24,13 @@ export default function VisitorForm() {
     setCameraOn(false);
   };
 
-  const startCamera = async (targetMode = facingMode) => {
+  const startCamera = async () => {
     setMsg(null);
     stopCamera();
     try {
       const constraints = {
         video: {
-          facingMode: { ideal: targetMode },
+          facingMode: 'user', // Selfie camera only
           width: { ideal: 1280 },
           height: { ideal: 720 }
         },
@@ -40,7 +39,6 @@ export default function VisitorForm() {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       setPhoto('');
-      setFacingMode(targetMode);
       setCameraOn(true);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -53,12 +51,6 @@ export default function VisitorForm() {
     }
   };
 
-  const toggleCameraFacing = async () => {
-    const nextMode = facingMode === 'user' ? 'environment' : 'user';
-    await startCamera(nextMode);
-  };
-
-  // Video element render hone ke baad stream attach karo
   useEffect(() => {
     if (cameraOn && videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current;
@@ -73,10 +65,9 @@ export default function VisitorForm() {
     canvas.width = Math.round(v.videoWidth * scale);
     canvas.height = Math.round(v.videoHeight * scale);
     const ctx = canvas.getContext('2d');
-    if (facingMode === 'user') {
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-    }
+    // Mirror for selfie camera so saved photo matches the preview
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
     ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
     setPhoto(canvas.toDataURL('image/jpeg', 0.75));
     stopCamera();
@@ -94,8 +85,8 @@ export default function VisitorForm() {
   const submit = async (e) => {
     e.preventDefault();
     setMsg(null);
-    if (!photo) {
-      setMsg({ type: 'error', text: 'Please capture a photo before submitting.' });
+    if (mode === 'checkin' && !photo) {
+      setMsg({ type: 'error', text: 'Please capture a photo before submitting check-in.' });
       return;
     }
     setLoading(true);
@@ -106,10 +97,9 @@ export default function VisitorForm() {
         setForm(empty);
         setPhoto('');
       } else {
-        const { data } = await axios.post('/api/visitors/checkout', { phone: form.phone, photo });
+        const { data } = await axios.post('/api/visitors/checkout', { phone: form.phone });
         setMsg({ type: 'success', text: `Thank you ${data.visitor.name}, your check-out is complete! ✅` });
         setForm(empty);
-        setPhoto('');
       }
     } catch (err) {
       setMsg({ type: 'error', text: err.response?.data?.message || 'Something went wrong. Please try again.' });
@@ -124,8 +114,8 @@ export default function VisitorForm() {
         <h2>Visitor {mode === 'checkin' ? 'Check In' : 'Check Out'}</h2>
         <p className="muted">
           {mode === 'checkin'
-            ? 'Welcome to ELOVAA. Please enter your details and capture a photo.'
-            : 'Enter your registered phone number and capture a photo to check out.'}
+            ? 'Welcome to ELOVAA. Please enter your details and capture a selfie photo.'
+            : 'Enter your registered phone number to check out.'}
         </p>
 
         <div className="seg">
@@ -169,73 +159,58 @@ export default function VisitorForm() {
             <>
               <label>Purpose of Visit</label>
               <input name="purpose" value={form.purpose} onChange={handle} required placeholder="Meeting, Interview, Delivery..." />
+
+              <label>Selfie Photo</label>
+              <div className="camera">
+                {cameraOn && (
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="mirror"
+                  />
+                )}
+                {!cameraOn && photo && <img src={photo} alt="captured" />}
+                {!cameraOn && !photo && (
+                  <div className="placeholder">
+                    <span>📷</span>
+                    No photo taken yet
+                  </div>
+                )}
+              </div>
+
+              <div className="camera-controls">
+                {cameraOn ? (
+                  <div className="camera-btn-group">
+                    <button type="button" className="btn primary" onClick={capture}>
+                      📸 Capture Photo
+                    </button>
+                    <button type="button" className="btn danger-soft" onClick={stopCamera} title="Turn off camera">
+                      ✕ Turn Off Camera
+                    </button>
+                  </div>
+                ) : !photo ? (
+                  <button type="button" className="btn soft block" onClick={startCamera}>
+                    🤳 Open Camera
+                  </button>
+                ) : (
+                  <div className="camera-btn-group">
+                    <button type="button" className="btn soft" onClick={startCamera}>
+                      🔄 Retake Photo
+                    </button>
+                    <button type="button" className="btn danger-soft" onClick={() => setPhoto('')}>
+                      🗑️ Remove Photo
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           )}
 
-          <label>{mode === 'checkin' ? 'Check-In Photo' : 'Check-Out Photo'}</label>
-          <div className="camera">
-            {cameraOn && (
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className={facingMode === 'user' ? 'mirror' : ''}
-              />
-            )}
-            {!cameraOn && photo && <img src={photo} alt="captured" />}
-            {!cameraOn && !photo && (
-              <div className="placeholder">
-                <span>📷</span>
-                No photo taken yet
-              </div>
-            )}
-          </div>
-
-          <div className="camera-controls">
-            {cameraOn ? (
-              <>
-                <button type="button" className="btn primary block" onClick={capture}>
-                  📸 Capture Photo
-                </button>
-                <div className="camera-btn-group">
-                  <button
-                    type="button"
-                    className="btn soft"
-                    onClick={toggleCameraFacing}
-                    title="Flip camera between front and rear"
-                  >
-                    🔄 {facingMode === 'user' ? 'Switch to Rear Camera' : 'Switch to Selfie Camera'}
-                  </button>
-                  <button type="button" className="btn danger-soft" onClick={stopCamera} title="Turn off camera">
-                    ✕ Turn Off Camera
-                  </button>
-                </div>
-              </>
-            ) : !photo ? (
-              <div className="camera-btn-group">
-                <button type="button" className="btn soft" onClick={() => startCamera('user')}>
-                  🤳 Open Selfie Camera
-                </button>
-                <button type="button" className="btn soft" onClick={() => startCamera('environment')}>
-                  📷 Open Rear Camera
-                </button>
-              </div>
-            ) : (
-              <div className="camera-btn-group">
-                <button type="button" className="btn soft" onClick={() => startCamera(facingMode)}>
-                  🔄 Retake Photo
-                </button>
-                <button type="button" className="btn danger-soft" onClick={() => setPhoto('')}>
-                  🗑️ Remove Photo
-                </button>
-              </div>
-            )}
-          </div>
-
           {msg && <div className={`msg ${msg.type}`}>{msg.text}</div>}
 
-          <button className="btn primary block lg" disabled={loading || !photo}>
+          <button className="btn primary block lg" disabled={loading || (mode === 'checkin' && !photo)}>
             {loading ? 'Please wait...' : mode === 'checkin' ? 'Submit Check In' : 'Submit Check Out'}
           </button>
         </form>

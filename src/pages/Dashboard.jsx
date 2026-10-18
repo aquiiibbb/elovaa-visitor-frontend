@@ -3,6 +3,9 @@ import axios from 'axios';
 import { useAuth } from '../auth.jsx';
 import { API_URL } from '../api.js';
 
+const DASHBOARD_PASSWORD = 'emine#012';
+const DASH_KEY = 'elovaa_dash_unlocked';
+
 const fmt = (d) =>
   d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true }) : '—';
 
@@ -15,20 +18,45 @@ function duration(a, b) {
 
 export default function Dashboard() {
   const { token } = useAuth();
+  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(DASH_KEY) === 'true');
+  const [passInput, setPassInput] = useState('');
+  const [passError, setPassError] = useState('');
+  const [showPass, setShowPass] = useState(false);
+
   const [visitors, setVisitors] = useState([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const load = () =>
+  const handleUnlock = (e) => {
+    e.preventDefault();
+    if (passInput === DASHBOARD_PASSWORD) {
+      sessionStorage.setItem(DASH_KEY, 'true');
+      setUnlocked(true);
+      setPassError('');
+    } else {
+      setPassError('Incorrect dashboard password. Please try again.');
+    }
+  };
+
+  const lockDashboard = () => {
+    sessionStorage.removeItem(DASH_KEY);
+    setUnlocked(false);
+    setPassInput('');
+  };
+
+  const load = () => {
+    if (!unlocked) return;
     axios.get('/api/visitors').then((r) => setVisitors(r.data)).catch(() => {}).finally(() => setLoading(false));
+  };
 
   useEffect(() => {
+    if (!unlocked) return;
     load();
     const t = setInterval(load, 10000);
     return () => clearInterval(t);
-  }, []);
+  }, [unlocked]);
 
   const photoUrl = (id, type = 'in') =>
     type === 'out'
@@ -52,9 +80,55 @@ export default function Dashboard() {
     { n: visitors.filter((v) => v.status === 'checked-out').length, l: 'Checked Out' },
   ];
 
+  if (!unlocked) {
+    return (
+      <div className="dash-lock-wrap">
+        <form className="dash-lock-card card" onSubmit={handleUnlock}>
+          <div className="dash-lock-icon">🔒</div>
+          <h2>Dashboard Protected</h2>
+          <p className="muted">Please enter the security password to view visitor records.</p>
+
+          <label htmlFor="dash-pass">Dashboard Password</label>
+          <div className="pw">
+            <input
+              id="dash-pass"
+              type={showPass ? 'text' : 'password'}
+              value={passInput}
+              onChange={(e) => {
+                setPassInput(e.target.value);
+                setPassError('');
+              }}
+              placeholder="Enter password"
+              required
+              autoFocus
+            />
+            <button
+              type="button"
+              className="pw-toggle"
+              onClick={() => setShowPass(!showPass)}
+            >
+              {showPass ? 'Hide' : 'Show'}
+            </button>
+          </div>
+
+          {passError && <div className="msg error">{passError}</div>}
+
+          <button className="btn primary block lg">
+            Unlock Dashboard
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="dash">
-      <h2 className="page-title">Dashboard</h2>
+      <div className="dash-header">
+        <h2 className="page-title">Dashboard</h2>
+        <button type="button" className="btn ghost sm" onClick={lockDashboard} title="Lock Dashboard">
+          🔒 Lock Dashboard
+        </button>
+      </div>
 
       <div className="stats">
         {stats.map((s) => (
@@ -75,36 +149,22 @@ export default function Dashboard() {
         <table className="rtable">
           <thead>
             <tr>
-              <th>In Photo</th><th>Out Photo</th><th>Name</th><th>Email</th><th>Phone</th><th>Purpose</th>
+              <th>Photo</th><th>Name</th><th>Email</th><th>Phone</th><th>Purpose</th>
               <th>Check In</th><th>Check Out</th><th>Duration</th><th>Status</th>
             </tr>
           </thead>
           <tbody>
             {list.map((v) => (
               <tr key={v._id}>
-                <td data-label="In Photo">
+                <td data-label="Photo">
                   {v.hasPhoto ? (
                     <img
                       className="thumb"
                       src={photoUrl(v._id, 'in')}
-                      alt={`${v.name} In`}
-                      title="View Check-In Photo"
+                      alt={`${v.name}`}
+                      title="View Photo"
                       loading="lazy"
                       onClick={() => setPreview(photoUrl(v._id, 'in'))}
-                    />
-                  ) : (
-                    '—'
-                  )}
-                </td>
-                <td data-label="Out Photo">
-                  {v.hasCheckOutPhoto ? (
-                    <img
-                      className="thumb"
-                      src={photoUrl(v._id, 'out')}
-                      alt={`${v.name} Out`}
-                      title="View Check-Out Photo"
-                      loading="lazy"
-                      onClick={() => setPreview(photoUrl(v._id, 'out'))}
                     />
                   ) : (
                     '—'
@@ -121,7 +181,7 @@ export default function Dashboard() {
               </tr>
             ))}
             {!loading && list.length === 0 && (
-              <tr className="empty-row"><td colSpan="10" className="empty">No visitor records found</td></tr>
+              <tr className="empty-row"><td colSpan="9" className="empty">No visitor records found</td></tr>
             )}
           </tbody>
         </table>
