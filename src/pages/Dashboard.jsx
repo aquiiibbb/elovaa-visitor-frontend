@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../auth.jsx';
 import { API_URL } from '../api.js';
 
-const DASHBOARD_PASSWORD = 'emine#012';
+const DASHBOARD_PASSWORD = 'elife#012';
 const DASH_KEY = 'elovaa_dash_unlocked';
 
 const fmt = (d) =>
