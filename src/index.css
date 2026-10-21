@@ -119,6 +119,27 @@ input:focus, select:focus { background: #fff; border-color: #9aa0aa; box-shadow:
 .badge { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .badge.checked-in { background: #e7f6ee; color: var(--ok); }
 .badge.checked-out { background: #eceef1; color: #4b5058; }
+.badge.inquiry { background: #e0f2fe; color: #0369a1; }
+.badge.student { background: #ede9fe; color: #6d28d9; }
+.badge.teacher { background: #fef3c7; color: #b45309; }
+.badge.staff { background: #ccfbf1; color: #0f766e; }
+
+.search-box-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.search-box-row input { flex: 1; }
+.verified-pill { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: #e7f6ee; color: var(--ok); border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+.verified-pill.new-record { background: #fef9c3; color: #854d0e; }
+
+/* modal dialog */
+.modal-content { background: #fff; width: 100%; max-width: 680px; max-height: 85vh; overflow-y: auto; border-radius: 20px; padding: 24px; box-shadow: var(--shadow-lg); text-align: left; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+.modal-header h3 { margin: 0; font-size: 20px; }
+.close-btn { background: transparent; border: 0; font-size: 24px; cursor: pointer; color: var(--muted); }
+.close-btn:hover { color: var(--ink); }
+
+.directory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.directory-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 14px; }
+.directory-table th { background: var(--bg2); padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--muted); }
+.directory-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); }
 .empty { text-align: center; color: var(--muted); padding: 34px !important; }
 .modal { position: fixed; inset: 0; background: rgba(15,16,20,.75); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
 .modal img { max-width: 100%; max-height: 90vh; border-radius: 18px; box-shadow: var(--shadow-lg); }
